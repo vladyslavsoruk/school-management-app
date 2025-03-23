@@ -1,8 +1,9 @@
 "use client";
 
-import { role } from "@/lib/data";
+import { useUser } from "@clerk/nextjs";
 import Image from "next/image";
 import Link from "next/link";
+import { usePathname } from "next/navigation";
 
 const menuItems = [
   {
@@ -120,6 +121,12 @@ const menuItems = [
 ];
 
 function Menu() {
+  const pathname = usePathname();
+  console.log("router", pathname);
+
+  const { user } = useUser();
+  const role = user?.publicMetadata.role as string;
+
   return (
     <div className="mt-4 text-sm">
       {menuItems.map((i) => {
@@ -135,7 +142,10 @@ function Menu() {
                     href={i.href}
                     key={i.href}
                     title={window.innerWidth < 1024 ? i.label : ""}
-                    className="flex items-center justify-center lg:justify-start gap-4 text-gray-500 py-2 md:px-2 rounded-md hover:bg-customSkyLight"
+                    className={`${
+                      i.href === pathname ? "bg-customSkyLight" : ""
+                    } flex items-center justify-center lg:justify-start gap-4 text-gray-500 py-2 md:px-2 rounded-md hover:bg-customSkyLight`}
+                    // className="flex items-center justify-center lg:justify-start gap-4 text-gray-500 py-2 md:px-2 rounded-md hover:bg-customSkyLight"
                   >
                     <Image src={i.icon} alt={i.label} width={20} height={20} />
                     <span className="hidden lg:block">{i.label}</span>

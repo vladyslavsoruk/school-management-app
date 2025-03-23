@@ -1,5 +1,5 @@
 {
-  "name": "lama-dev-next-dashboard",
+  "name": "sorvl-next-dashboard",
   "version": "0.1.0",
   "prisma": {
     "seed": "ts-node --compiler-options {\"module\":\"CommonJS\"} prisma/seed.ts"
@@ -12,6 +12,8 @@
     "lint": "next lint"
   },
   "dependencies": {
+    "@clerk/elements": "^0.23.2",
+    "@clerk/nextjs": "^6.12.5",
     "@hookform/resolvers": "^3.10.0",
     "@prisma/client": "^6.2.1",
     "moment": "^2.30.1",

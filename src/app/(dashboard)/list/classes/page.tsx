@@ -2,12 +2,14 @@ import FormModal from "@/components/FormModal";
 import Pagination from "@/components/Pagination";
 import Table from "@/components/Table";
 import TableSearch from "@/components/TableSearch";
-import { role, classesData } from "@/lib/data";
 import prisma from "@/lib/prisma";
 import { ITEMS_PER_PAGE } from "@/lib/settings";
+import { auth } from "@clerk/nextjs/server";
 import { Class, Prisma, Teacher, Subject } from "@prisma/client";
 import Image from "next/image";
 import Link from "next/link";
+
+let role: string | null = null;
 
 type ClassList = Class & { supervisor: Teacher };
 
@@ -30,10 +32,14 @@ const columns = [
     accessor: "supervisor",
     className: "hidden md:table-cell",
   },
-  {
-    header: "Actions",
-    accessor: "action",
-  },
+  ...(role === "admin"
+    ? [
+        {
+          header: "Actions",
+          accessor: "action",
+        },
+      ]
+    : []),
 ];
 
 const renderRow = (item: ClassList) => {
@@ -69,6 +75,16 @@ async function ClassList({
 }: {
   searchParams: { [key: string]: string | undefined };
 }) {
+  let authObject = await auth();
+  let currentUserId = authObject.userId;
+
+  console.log("currentUserId:", currentUserId);
+
+  auth().then((value) => {
+    role = (value.sessionClaims?.metadata as { role: string })?.role;
+    console.log("VALUE!!!", role);
+  });
+
   const { page, ...queryParams } = searchParams;
 
   const p = page ? parseInt(page) : 1;

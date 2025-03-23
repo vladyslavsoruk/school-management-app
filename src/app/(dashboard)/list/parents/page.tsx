@@ -2,12 +2,14 @@ import FormModal from "@/components/FormModal";
 import Pagination from "@/components/Pagination";
 import Table from "@/components/Table";
 import TableSearch from "@/components/TableSearch";
-import { role, parentsData } from "@/lib/data";
 import prisma from "@/lib/prisma";
 import { ITEMS_PER_PAGE } from "@/lib/settings";
+import { auth } from "@clerk/nextjs/server";
 import { Parent, Prisma, Student } from "@prisma/client";
 import Image from "next/image";
 import Link from "next/link";
+
+let role: string | null = null;
 
 type ParentList = Parent & { students: Student[] };
 
@@ -28,10 +30,14 @@ const columns = [
     accessor: "address",
     className: "hidden lg:table-cell",
   },
-  {
-    header: "Actions",
-    accessor: "action",
-  },
+  ...(role === "admin"
+    ? [
+        {
+          header: "Actions",
+          accessor: "action",
+        },
+      ]
+    : []),
 ];
 
 const renderRow = (item: ParentList) => {
@@ -70,6 +76,13 @@ async function ParentList({
 }: {
   searchParams: { [key: string]: string | undefined };
 }) {
+  const authObject = await auth();
+  const currentUserId = authObject.userId;
+  role = (authObject.sessionClaims?.metadata as { role: string })?.role;
+
+  console.log("currentUserId:", currentUserId);
+  console.log("role:", role);
+
   const { page, ...queryParams } = searchParams;
 
   const p = page ? parseInt(page) : 1;
