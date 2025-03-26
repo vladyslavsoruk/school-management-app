@@ -1,13 +1,45 @@
-// "use client";
-
 import BigCalendar from "@/components/BigCalendar";
 import Image from "next/image";
 import Link from "next/link";
 import Announcements from "@/components/Announcements";
 import PerformanceChart from "@/components/PerformanceChart";
-import FormModal from "@/components/FormModal";
+import prisma from "@/lib/prisma";
+import { Teacher } from "@prisma/client";
+import { notFound } from "next/navigation";
+import FormContainer from "@/components/FormContainer";
+import { auth } from "@clerk/nextjs/server";
 
-function SingleTeacherPage() {
+async function SingleTeacherPage({
+  params: { id },
+}: {
+  params: { id: string };
+}) {
+  const authObject = await auth();
+  const role = (authObject.sessionClaims?.metadata as { role: string })?.role;
+
+  const teacher:
+    | (Teacher & {
+        _count: { subjects: number; lessons: number; classes: number };
+      })
+    | null = await prisma.teacher.findUnique({
+    where: {
+      id,
+    },
+    include: {
+      _count: {
+        select: {
+          subjects: true,
+          lessons: true,
+          classes: true,
+        },
+      },
+    },
+  });
+
+  if (!teacher) {
+    return notFound();
+  }
+
   return (
     <div className="flex-1 p-4 flex flex-col gap-4 xl:flex-row">
       {/* LEFT */}
@@ -18,7 +50,7 @@ function SingleTeacherPage() {
           <div className="bg-customSky py-6 px-4 rounded-md flex-1 flex gap-4">
             <div className="w-1/3">
               <Image
-                src="https://images.pexels.com/photos/2888150/pexels-photo-2888150.jpeg?auto=compress&cs=tinysrgb&w=1200"
+                src={teacher.img || "/noAvatar.png"}
                 alt=""
                 width={144}
                 height={144}
@@ -27,25 +59,12 @@ function SingleTeacherPage() {
             </div>
             <div className="w-2/3 flex flex-col justify-between gap-4">
               <div className="flex items-center gap-4">
-                <h1 className="text-xl font-semibold">Leonard Snyder</h1>
-                <FormModal
-                  table="teacher"
-                  type="update"
-                  data={{
-                    id: 1,
-                    username: "deanguerrero",
-                    email: "deanguerrero@gmail.com",
-                    firstName: "Dean",
-                    lastName: "Guerrero",
-                    phone: "+1 234 567 89",
-                    address: "1234 Main St, Michigan, USA",
-                    bloodType: "A+",
-                    password: "aief8323203",
-                    birthday: "2017-01-12",
-                    sex: "male",
-                    img: "https://images.pexels.com/photos/2888150/pexels-photo-2888150.jpeg?auto=compress&cs=tinysrgb&w=1200",
-                  }}
-                />
+                <h1 className="text-xl font-semibold">
+                  {teacher.name + " " + teacher.surname}
+                </h1>
+                {role === "admin" && (
+                  <FormContainer table="teacher" type="update" data={teacher} />
+                )}
               </div>
               <p className="text-sm text-gray-500">
                 Lorem ipsum dolor sit amet consectetur adipisicing elit. Quasi
@@ -54,19 +73,21 @@ function SingleTeacherPage() {
               <div className="flex items-center justify-between gap-2 flex-wrap text-xs font-medium">
                 <div className="w-full md:w-1/3 flex items-center gap-2 lg:w-full 2xl:w-1/3">
                   <Image src="/blood.png" alt="" width={14} height={14} />
-                  <span>A+</span>
+                  <span>{teacher.bloodType}</span>
                 </div>
                 <div className="w-full md:w-1/3 flex items-center gap-2 lg:w-full 2xl:w-1/3">
                   <Image src="/date.png" alt="" width={14} height={14} />
-                  <span>January 2025</span>
+                  <span>
+                    {new Intl.DateTimeFormat("en-GB").format(teacher.birthday)}
+                  </span>
                 </div>
                 <div className="w-full md:w-1/3 flex items-center gap-2 lg:w-full 2xl:w-1/3">
                   <Image src="/mail.png" alt="" width={14} height={14} />
-                  <span>user@gmail.com</span>
+                  <span>{teacher.email || "\u2014"}</span>
                 </div>
                 <div className="w-full md:w-1/3 flex items-center gap-2 lg:w-full 2xl:w-1/3">
                   <Image src="/phone.png" alt="" width={14} height={14} />
-                  <span>+1 234 567</span>
+                  <span>{teacher.phone || "\u2014"}</span>
                 </div>
               </div>
             </div>
@@ -95,8 +116,10 @@ function SingleTeacherPage() {
                 className="w-6 h-6"
               />
               <div>
-                <h1 className="text-xl font-semibold">2</h1>
-                <span className="text-sm text-gray-400">Branches</span>
+                <h1 className="text-xl font-semibold">
+                  {teacher._count.subjects}
+                </h1>
+                <span className="text-sm text-gray-400">Subjects</span>
               </div>
             </div>
             <div className="bg-white p-4 rounded-md flex gap-4  w-full md:w-[48%] lg:w-[45%] 2xl:w-[48%]">
@@ -108,7 +131,9 @@ function SingleTeacherPage() {
                 className="w-6 h-6"
               />
               <div>
-                <h1 className="text-xl font-semibold">6</h1>
+                <h1 className="text-xl font-semibold">
+                  {teacher._count.lessons}
+                </h1>
                 <span className="text-sm text-gray-400">Lessons</span>
               </div>
             </div>
@@ -121,7 +146,9 @@ function SingleTeacherPage() {
                 className="w-6 h-6"
               />
               <div>
-                <h1 className="text-xl font-semibold">6</h1>
+                <h1 className="text-xl font-semibold">
+                  {teacher._count.classes}
+                </h1>
                 <span className="text-sm text-gray-400">Classes</span>
               </div>
             </div>
@@ -130,7 +157,7 @@ function SingleTeacherPage() {
         {/* BOTTOM */}
         <div className="mt-4 bg-white rounded-md p-4 h-[800px]">
           <h1>Teacher&apos;s Schedule</h1>
-          <BigCalendar />
+          {/* <BigCalendar /> */}
         </div>
       </div>
       {/* RIGHT */}

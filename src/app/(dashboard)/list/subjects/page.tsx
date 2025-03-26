@@ -1,3 +1,4 @@
+import FormContainer from "@/components/FormContainer";
 import FormModal from "@/components/FormModal";
 import Pagination from "@/components/Pagination";
 import Table from "@/components/Table";
@@ -42,8 +43,8 @@ const renderRow = (item: SubjectList) => {
         <div className="flex items-center gap-2">
           {role === "admin" && (
             <>
-              <FormModal table={"subject"} type={"update"} data={item} />
-              <FormModal table={"subject"} type={"delete"} id={item.id} />
+              <FormContainer table={"subject"} type={"update"} data={item} />
+              <FormContainer table={"subject"} type={"delete"} id={item.id} />
             </>
           )}
         </div>
@@ -109,7 +110,7 @@ async function SubjectList({
               <Image src="/sort.png" alt="" width={14} height={14} />
             </button>
             {role === "admin" && (
-              <FormModal table={"subject"} type={"create"} />
+              <FormContainer table={"subject"} type={"create"} />
             )}
           </div>
         </div>

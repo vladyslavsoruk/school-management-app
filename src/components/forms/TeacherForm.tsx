@@ -1,52 +1,61 @@
 "use client";
 
+import { CldUploadWidget } from "next-cloudinary";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
-import * as z from "zod";
 import InputField from "../InputField";
 import Image from "next/image";
-
-const schema = z.object({
-  username: z
-    .string()
-    .min(3, { message: "Username must be at least 3 characters long!" })
-    .max(20, { message: "Username must be at most 20 characters long!" }),
-  email: z.string().email({ message: "Invalid email address!" }),
-  password: z
-    .string()
-    .min(8, { message: "Password must be at least 8 characters long!" }),
-  firstName: z.string().min(1, { message: "First name is required!" }),
-  lastName: z.string().min(1, { message: "Last name is required!" }),
-  phone: z.string().min(1, { message: "Phone is required!" }),
-  address: z.string().min(1, { message: "Address is required!" }),
-  bloodType: z.string().min(1, { message: "Blood type is required!" }),
-  birthday: z.date({ message: "Birthday is required!" }),
-  sex: z.enum(["male", "female"], { message: "Sex is required!" }),
-  //   img: z.any().refine((files) => files?.[0], { message: "Image is required!" }),
-  img: z.instanceof(File, { message: "Image is required!" }),
-});
-
-type Inputs = z.infer<typeof schema>;
+import { Dispatch, SetStateAction, useEffect, useState } from "react";
+import { teacherSchema, TeacherSchema } from "@/lib/formValidationSchemas";
+import { useFormState } from "react-dom";
+import { createTeacher, updateTeacher } from "@/lib/actions";
+import { useRouter } from "next/navigation";
+import { toast } from "react-toastify";
+import { imageConfigDefault } from "next/dist/shared/lib/image-config";
 
 function TeacherForm({
-  data,
+  setOpen,
   type,
+  data,
+  relatedData,
 }: {
-  data?: any;
+  setOpen: Dispatch<SetStateAction<boolean>>;
   type: "create" | "update";
+  data?: any;
+  relatedData?: any;
 }) {
   const {
     register,
     handleSubmit,
     formState: { errors },
-  } = useForm<Inputs>({
-    resolver: zodResolver(schema),
+  } = useForm<TeacherSchema>({
+    resolver: zodResolver(teacherSchema),
+  });
+
+  const teacherAction = type === "create" ? createTeacher : updateTeacher;
+
+  const [img, setImg] = useState<any>();
+
+  const [state, formAction] = useFormState(teacherAction, {
+    success: false,
+    error: false,
   });
 
   const onSubmit = handleSubmit((d) => {
     console.log("HELLO from react-hook-form!!!");
     console.log(d);
+    formAction({ ...d, img: img?.secure_url });
   });
+
+  const router = useRouter();
+
+  useEffect(() => {
+    state.success && toast(`Teacher was successfully ${type}d!`);
+    state.success && setOpen(false);
+    state.success && router.refresh();
+  }, [state]);
+
+  const { subjects } = relatedData;
 
   return (
     <form onSubmit={onSubmit} className="flex flex-col gap-8">
@@ -57,6 +66,15 @@ function TeacherForm({
         Authentication Information
       </span>
       <div className="flex justify-between flex-wrap gap-4">
+        {data && (
+          <InputField
+            label="Id"
+            register={register}
+            name="id"
+            defaultValue={data?.id}
+            hidden={true}
+          />
+        )}
         <InputField
           label="Username"
           type="text"
@@ -91,17 +109,17 @@ function TeacherForm({
           label="First name"
           type="text"
           register={register}
-          name="firstName"
-          defaultValue={data?.firstName}
-          error={errors.firstName}
+          name="name"
+          defaultValue={data?.name}
+          error={errors.name}
         />
         <InputField
           label="Last name"
           type="text"
           register={register}
-          name="lastName"
-          defaultValue={data?.lastName}
-          error={errors.lastName}
+          name="surname"
+          defaultValue={data?.surname}
+          error={errors.surname}
         />
         <InputField
           label="Phone"
@@ -132,9 +150,8 @@ function TeacherForm({
           type="date"
           register={register}
           name="birthday"
-          // defaultValue={data?.birthday}
+          defaultValue={data?.birthday.toISOString().split("T")[0]}
           error={errors.birthday}
-          inputProps={{ value: data?.birthday }}
         />
 
         <div className="flex flex-col gap-2 w-full md:w-1/4">
@@ -144,46 +161,62 @@ function TeacherForm({
             className="ring-[1.5px] ring-gray-300 p-2 rounded-md  text-sm w-full"
             defaultValue={data?.sex}
           >
-            <option value="male">Male</option>
-            <option value="female">Female</option>
+            <option value="MALE">MALE</option>
+            <option value="FEMALE">FEMALE</option>
           </select>
           {errors.sex && (
             <p className="text-xs text-red-400">{errors?.sex.toString()}</p>
           )}
         </div>
-        <div className="flex flex-col gap-2 w-full md:w-1/4 self-end">
-          <label
-            className="text-xs text-gray-500 flex items-center gap-2 cursor-pointer"
-            htmlFor="img"
+        <div className="flex flex-col gap-2 w-full md:w-1/4">
+          <label className="text-xs text-gray-500">Subjects</label>
+          <select
+            multiple
+            {...register("subjects")}
+            className="ring-[1.5px] ring-gray-300 p-2 rounded-md  text-sm w-full"
+            defaultValue={data?.subjects}
           >
-            <Image src="/upload.png" alt="" width={28} height={28} />
-            <span>Upload a photo</span>
-          </label>
-          <input id="img" type="file" {...register("img")} className="hidden" />
-
-          {errors.img && (
-            <p className="text-xs text-red-400">{errors?.img.toString()}</p>
+            {subjects.map((subject: { id: number; name: string }) => (
+              <option value={subject.id} key={subject.id}>
+                {subject.name}
+              </option>
+            ))}
+          </select>
+          {errors.subjects && (
+            <p className="text-xs text-red-400">
+              {errors.subjects.message?.toString()}
+            </p>
           )}
         </div>
+        <div className="w-full md:w-1/4 self-center">
+          <CldUploadWidget
+            uploadPreset="school-dashboard-ui"
+            onSuccess={(result, { widget }) => {
+              setImg(result.info);
+              widget.close();
+            }}
+          >
+            {({ open }) => {
+              return (
+                <div
+                  className="text-xs text-gray-500 flex items-center gap-2 cursor-pointer"
+                  onClick={() => open()}
+                >
+                  <Image src="/upload.png" alt="" width={28} height={28} />
+                  <span>Upload a photo</span>
+                </div>
+              );
+            }}
+          </CldUploadWidget>
+        </div>
       </div>
-      {/* <span className="text-xs text-gray-400 font-medium">
-        Personal Information
-      </span>
-      <label>Enter your username:</label>
-      <input
-        type="text"
-        {...register("username")}
-        // className="border border-gray-800"
-      />
-      {errors.username?.message && <p>{errors.username?.message}</p>}
-      <label>Load your image!</label>
-      <input type="file" {...register("img")} />
-      {errors.img?.message && <p>{errors.img?.message}</p>} */}
 
+      {state.error && (
+        <span className="text-red-500">Something went wrong!</span>
+      )}
       <button className="bg-blue-400 text-white rounded-md p-2" type="submit">
         {type === "create" ? "Create" : "Update"}
       </button>
-      {/* <input type="submit" /> */}
     </form>
   );
 }

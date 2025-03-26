@@ -1,3 +1,4 @@
+import FormContainer from "@/components/FormContainer";
 import FormModal from "@/components/FormModal";
 import Pagination from "@/components/Pagination";
 import Table from "@/components/Table";
@@ -9,38 +10,9 @@ import { Class, Prisma, Teacher, Subject } from "@prisma/client";
 import Image from "next/image";
 import Link from "next/link";
 
-let role: string | null = null;
-
 type ClassList = Class & { supervisor: Teacher };
 
-const columns = [
-  {
-    header: "Class Name",
-    accessor: "name",
-  },
-  {
-    header: "Capacity",
-    accessor: "capacity",
-  },
-  {
-    header: "Grade",
-    accessor: "grade",
-    className: "hidden md:table-cell",
-  },
-  {
-    header: "Supervisor",
-    accessor: "supervisor",
-    className: "hidden md:table-cell",
-  },
-  ...(role === "admin"
-    ? [
-        {
-          header: "Actions",
-          accessor: "action",
-        },
-      ]
-    : []),
-];
+let role: string | null = null;
 
 const renderRow = (item: ClassList) => {
   return (
@@ -60,8 +32,8 @@ const renderRow = (item: ClassList) => {
         <div className="flex items-center gap-2">
           {role === "admin" && (
             <>
-              <FormModal table={"class"} type={"update"} data={item} />
-              <FormModal table={"class"} type={"delete"} id={item.id} />
+              <FormContainer table={"class"} type={"update"} data={item} />
+              <FormContainer table={"class"} type={"delete"} id={item.id} />
             </>
           )}
         </div>
@@ -75,15 +47,38 @@ async function ClassList({
 }: {
   searchParams: { [key: string]: string | undefined };
 }) {
-  let authObject = await auth();
-  let currentUserId = authObject.userId;
+  const authObject = await auth();
+  const currentUserId = authObject.userId;
+  role = (authObject.sessionClaims?.metadata as { role: string })?.role;
 
-  console.log("currentUserId:", currentUserId);
-
-  auth().then((value) => {
-    role = (value.sessionClaims?.metadata as { role: string })?.role;
-    console.log("VALUE!!!", role);
-  });
+  const columns = [
+    {
+      header: "Class Name",
+      accessor: "name",
+    },
+    {
+      header: "Capacity",
+      accessor: "capacity",
+    },
+    {
+      header: "Grade",
+      accessor: "grade",
+      className: "hidden md:table-cell",
+    },
+    {
+      header: "Supervisor",
+      accessor: "supervisor",
+      className: "hidden md:table-cell",
+    },
+    ...(role === "admin"
+      ? [
+          {
+            header: "Actions",
+            accessor: "action",
+          },
+        ]
+      : []),
+  ];
 
   const { page, ...queryParams } = searchParams;
 
@@ -135,7 +130,9 @@ async function ClassList({
             <button className="w-8 h-8 flex items-center justify-center rounded-full bg-customYellow">
               <Image src="/sort.png" alt="" width={14} height={14} />
             </button>
-            {role === "admin" && <FormModal table={"class"} type={"create"} />}
+            {role === "admin" && (
+              <FormContainer table={"class"} type={"create"} />
+            )}
           </div>
         </div>
       </div>

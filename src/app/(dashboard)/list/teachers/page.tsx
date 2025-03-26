@@ -3,52 +3,15 @@ import Table from "@/components/Table";
 import TableSearch from "@/components/TableSearch";
 import Image from "next/image";
 import Link from "next/link";
-import FormModal from "@/components/FormModal";
 import prisma from "@/lib/prisma";
 import { Class, Prisma, Subject, Teacher } from "@prisma/client";
 import { ITEMS_PER_PAGE } from "@/lib/settings";
 import { auth } from "@clerk/nextjs/server";
+import FormContainer from "@/components/FormContainer";
 
 let role: string | null = null;
 
 type TeacherList = Teacher & { subjects: Subject[] } & { classes: Class[] };
-
-const columns = [
-  { header: "Info", accessor: "Info" },
-  {
-    header: "Teacher ID",
-    accessor: "teacherId",
-    className: "hidden md:table-cell",
-  },
-  {
-    header: "Subjects",
-    accessor: "subjects",
-    className: "hidden md:table-cell",
-  },
-  {
-    header: "Classes",
-    accessor: "classes",
-    className: "hidden md:table-cell",
-  },
-  {
-    header: "Phone",
-    accessor: "phone",
-    className: "hidden lg:table-cell",
-  },
-  {
-    header: "Address",
-    accessor: "address",
-    className: "hidden lg:table-cell",
-  },
-  ...(role === "admin"
-    ? [
-        {
-          header: "Actions",
-          accessor: "action",
-        },
-      ]
-    : []),
-];
 
 const renderRow = (item: TeacherList) => {
   return (
@@ -90,7 +53,7 @@ const renderRow = (item: TeacherList) => {
             </button>
           </Link>
           {role === "admin" && (
-            <FormModal table={"teacher"} type={"delete"} id={item.id} />
+            <FormContainer table={"teacher"} type={"delete"} id={item.id} />
           )}
         </div>
       </td>
@@ -106,6 +69,43 @@ async function TeacherList({
   const authObject = await auth();
   const currentUserId = authObject.userId;
   role = (authObject.sessionClaims?.metadata as { role: string })?.role;
+
+  const columns = [
+    { header: "Info", accessor: "Info" },
+    {
+      header: "Teacher ID",
+      accessor: "teacherId",
+      className: "hidden md:table-cell",
+    },
+    {
+      header: "Subjects",
+      accessor: "subjects",
+      className: "hidden md:table-cell",
+    },
+    {
+      header: "Classes",
+      accessor: "classes",
+      className: "hidden md:table-cell",
+    },
+    {
+      header: "Phone",
+      accessor: "phone",
+      className: "hidden lg:table-cell",
+    },
+    {
+      header: "Address",
+      accessor: "address",
+      className: "hidden lg:table-cell",
+    },
+    ...(role === "admin"
+      ? [
+          {
+            header: "Actions",
+            accessor: "action",
+          },
+        ]
+      : []),
+  ];
 
   const { page, ...queryParams } = searchParams;
 
@@ -164,7 +164,7 @@ async function TeacherList({
               <Image src="/sort.png" alt="" width={14} height={14} />
             </button>
             {role === "admin" && (
-              <FormModal table={"teacher"} type={"create"} />
+              <FormContainer table={"teacher"} type={"create"} />
             )}
           </div>
         </div>

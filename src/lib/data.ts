@@ -1,6 +1,8 @@
 // TEMPORARY DATA
 
-export let role = "student";
+import { auth } from "@clerk/nextjs/server";
+
+// export let role = "student";
 
 export const teachersData = [
   {

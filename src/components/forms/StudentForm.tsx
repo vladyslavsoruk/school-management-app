@@ -132,9 +132,8 @@ function StudentForm({
           type="date"
           register={register}
           name="birthday"
-          // defaultValue={data?.birthday}
+          defaultValue={data?.birthday.toISOString().split("T")[0]}
           error={errors.birthday}
-          inputProps={{ value: data?.birthday }}
         />
 
         <div className="flex flex-col gap-2 w-full md:w-1/4">
