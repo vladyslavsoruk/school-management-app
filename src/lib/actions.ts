@@ -190,7 +190,7 @@ export const updateTeacher = async (
     }
     const client = await clerkClient();
 
-    const response = await client.users.updateUser(data.id, {
+    await client.users.updateUser(data.id, {
       username: data.username,
       ...(data.password !== "" && { password: data.password }),
       firstName: data.name,
@@ -232,6 +232,9 @@ export const deleteTeacher = async (
 ) => {
   const id = data.get("id") as string;
   try {
+    const client = await clerkClient();
+    await client.users.deleteUser(id);
+
     await prisma.teacher.delete({
       where: {
         id,
@@ -251,6 +254,15 @@ export const createStudent = async (
   data: StudentSchema
 ) => {
   try {
+    const classItem = await prisma.class.findUnique({
+      where: { id: data.classId },
+      include: { _count: { select: { students: true } } },
+    });
+
+    if (classItem && classItem.capacity === classItem._count.students) {
+      return { error: true, success: false };
+    }
+
     const client = await clerkClient();
 
     const response = await client.users.createUser({
@@ -276,6 +288,9 @@ export const createStudent = async (
         sex: data.sex,
         birthday: data.birthday,
         img: data.img,
+        gradeId: data.gradeId,
+        parentId: data.parentId,
+        classId: data.classId,
       },
     });
     return { success: true, error: false };
@@ -295,7 +310,7 @@ export const updateStudent = async (
     }
     const client = await clerkClient();
 
-    const response = await client.users.updateUser(data.id, {
+    await client.users.updateUser(data.id, {
       username: data.username,
       ...(data.password !== "" && { password: data.password }),
       firstName: data.name,
@@ -317,6 +332,9 @@ export const updateStudent = async (
         sex: data.sex,
         birthday: data.birthday,
         img: data.img,
+        gradeId: data.gradeId,
+        parentId: data.parentId,
+        classId: data.classId,
       },
     });
     return { success: true, error: false };
@@ -332,6 +350,9 @@ export const deleteStudent = async (
 ) => {
   const id = data.get("id") as string;
   try {
+    const client = await clerkClient();
+    await client.users.deleteUser(id);
+
     await prisma.student.delete({
       where: {
         id,

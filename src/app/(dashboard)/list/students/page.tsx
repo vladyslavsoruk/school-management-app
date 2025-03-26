@@ -3,12 +3,12 @@ import Table from "@/components/Table";
 import TableSearch from "@/components/TableSearch";
 import Image from "next/image";
 import Link from "next/link";
-import { teachersData } from "@/lib/data";
 import FormModal from "@/components/FormModal";
 import prisma from "@/lib/prisma";
 import { ITEMS_PER_PAGE } from "@/lib/settings";
 import { Class, Grade, Prisma, Student } from "@prisma/client";
 import { auth } from "@clerk/nextjs/server";
+import FormContainer from "@/components/FormContainer";
 
 let role: string | null = null;
 
@@ -45,7 +45,7 @@ const renderRow = (item: StudentList) => {
             </button>
           </Link>
           {role === "admin" && (
-            <FormModal table={"student"} type={"delete"} id={item.id} />
+            <FormContainer table={"student"} type={"delete"} id={item.id} />
           )}
         </div>
       </td>
@@ -153,7 +153,7 @@ async function StudentList({
               <Image src="/sort.png" alt="" width={14} height={14} />
             </button>
             {role === "admin" && (
-              <FormModal table={"student"} type={"create"} />
+              <FormContainer table={"student"} type={"create"} />
             )}
           </div>
         </div>

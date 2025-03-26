@@ -11,7 +11,6 @@ import { useFormState } from "react-dom";
 import { createTeacher, updateTeacher } from "@/lib/actions";
 import { useRouter } from "next/navigation";
 import { toast } from "react-toastify";
-import { imageConfigDefault } from "next/dist/shared/lib/image-config";
 
 function TeacherForm({
   setOpen,

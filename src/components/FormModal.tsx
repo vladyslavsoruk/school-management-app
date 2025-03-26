@@ -102,7 +102,7 @@ function FormModal({
 
     useEffect(() => {
       if (state.success) {
-        toast(`Subject was successfully deleted!`);
+        toast(`${table} was successfully deleted!`);
         setOpen(false);
         router.refresh();
       }

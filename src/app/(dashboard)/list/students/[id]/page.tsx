@@ -3,7 +3,6 @@ import Image from "next/image";
 import Link from "next/link";
 import Announcements from "@/components/Announcements";
 import PerformanceChart from "@/components/PerformanceChart";
-import FormModal from "@/components/FormModal";
 import { auth } from "@clerk/nextjs/server";
 import { Class, Student } from "@prisma/client";
 import prisma from "@/lib/prisma";
@@ -11,6 +10,7 @@ import { notFound } from "next/navigation";
 import { Suspense } from "react";
 import StudentAttendanceCard from "@/components/StudentAttendanceCard";
 import BigCalendarContainer from "@/components/BigCalendarContainer";
+import FormContainer from "@/components/FormContainer";
 
 async function SingleStudentPage({
   params: { id },
@@ -63,7 +63,9 @@ async function SingleStudentPage({
                 <h1 className="text-xl font-semibold">
                   {student.name + " " + student.surname}
                 </h1>
-                <FormModal table="student" type="update" />
+                {role === "admin" && (
+                  <FormContainer table="student" type="update" data={student} />
+                )}
               </div>
               <p className="text-sm text-gray-500">
                 Lorem ipsum dolor sit amet consectetur adipisicing elit. Quasi

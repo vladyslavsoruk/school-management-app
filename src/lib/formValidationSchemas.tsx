@@ -72,6 +72,9 @@ export const studentSchema = z.object({
   birthday: z.coerce.date({ message: "Birthday is required!" }),
   sex: z.enum(["MALE", "FEMALE"], { message: "Sex is required!" }),
   img: z.string().optional(),
+  gradeId: z.coerce.number().min(1, { message: "Grade is required!" }),
+  classId: z.coerce.number().min(1, { message: "Class is required!" }),
+  parentId: z.string().min(1, { message: "Parent Id is required!" }),
 });
 
 export type SubjectSchema = z.infer<typeof subjectSchema>;

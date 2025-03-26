@@ -31,19 +31,18 @@ function StudentForm({
     resolver: zodResolver(studentSchema),
   });
 
-  const [img, setImg] = useState<any>();
-
   const studentAction = type === "create" ? createStudent : updateStudent;
+
+  const [img, setImg] = useState<any>();
 
   const [state, formAction] = useFormState(studentAction, {
     success: false,
     error: false,
   });
-
   const onSubmit = handleSubmit((d) => {
     console.log("HELLO from react-hook-form!!!");
     console.log(d);
-    formAction({ ...d, img: img.secure_url });
+    formAction({ ...d, img: img?.secure_url });
   });
 
   const router = useRouter();
@@ -54,7 +53,7 @@ function StudentForm({
     state.success && router.refresh();
   }, [state]);
 
-  // const { teachers } = relatedData;
+  const { grades, classes } = relatedData;
 
   return (
     <form onSubmit={onSubmit} className="flex flex-col gap-8">
@@ -71,6 +70,7 @@ function StudentForm({
             register={register}
             name="id"
             defaultValue={data?.id}
+            hidden={true}
           />
         )}
         <InputField
@@ -151,6 +151,14 @@ function StudentForm({
           defaultValue={data?.birthday.toISOString().split("T")[0]}
           error={errors.birthday}
         />
+        <InputField
+          label="Parent Id"
+          type="text"
+          register={register}
+          name="parentId"
+          defaultValue={data?.parentId}
+          error={errors.parentId}
+        />
 
         <div className="flex flex-col gap-2 w-full md:w-1/4">
           <label className="text-xs text-gray-500">Sex</label>
@@ -159,14 +167,60 @@ function StudentForm({
             className="ring-[1.5px] ring-gray-300 p-2 rounded-md  text-sm w-full"
             defaultValue={data?.sex}
           >
-            <option value="MALE">Male</option>
-            <option value="FEMALE">Female</option>
+            <option value="MALE">MALE</option>
+            <option value="FEMALE">FEMALE</option>
           </select>
           {errors.sex && (
             <p className="text-xs text-red-400">{errors?.sex.toString()}</p>
           )}
         </div>
-        <div className="flex flex-col gap-2 w-full md:w-1/4 self-end">
+        <div className="flex flex-col gap-2 w-full md:w-1/4">
+          <label className="text-xs text-gray-500">Grade</label>
+          <select
+            {...register("gradeId")}
+            className="ring-[1.5px] ring-gray-300 p-2 rounded-md  text-sm w-full"
+            defaultValue={data?.gradeId}
+          >
+            {grades.map((grade: { id: number; level: string }) => (
+              <option value={grade.id} key={grade.id}>
+                {grade.level}
+              </option>
+            ))}
+          </select>
+          {errors.gradeId && (
+            <p className="text-xs text-red-400">
+              {errors.gradeId.message?.toString()}
+            </p>
+          )}
+        </div>
+        <div className="flex flex-col gap-2 w-full md:w-1/4">
+          <label className="text-xs text-gray-500">Class</label>
+          <select
+            {...register("classId")}
+            className="ring-[1.5px] ring-gray-300 p-2 rounded-md  text-sm w-full"
+            defaultValue={data?.classId}
+          >
+            {classes.map(
+              (classItem: {
+                id: number;
+                name: string;
+                capacity: number;
+                _count: { students: number };
+              }) => (
+                <option value={classItem.id} key={classItem.id}>
+                  {classItem.name} {"\u2014"} Capacity:{" "}
+                  {classItem._count.students + "/" + classItem.capacity}
+                </option>
+              )
+            )}
+          </select>
+          {errors.classId && (
+            <p className="text-xs text-red-400">
+              {errors.classId.message?.toString()}
+            </p>
+          )}
+        </div>
+        <div className="w-full md:w-1/4 self-center">
           <CldUploadWidget
             uploadPreset="school-dashboard-ui"
             onSuccess={(result, { widget }) => {
@@ -188,13 +242,13 @@ function StudentForm({
           </CldUploadWidget>
         </div>
       </div>
+
       {state.error && (
         <span className="text-red-500">Something went wrong!</span>
       )}
       <button className="bg-blue-400 text-white rounded-md p-2" type="submit">
         {type === "create" ? "Create" : "Update"}
       </button>
-      {/* <input type="submit" /> */}
     </form>
   );
 }
