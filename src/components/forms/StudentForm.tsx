@@ -2,51 +2,59 @@
 
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
-import * as z from "zod";
 import InputField from "../InputField";
 import Image from "next/image";
-
-const schema = z.object({
-  username: z
-    .string()
-    .min(3, { message: "Username must be at least 3 characters long!" })
-    .max(20, { message: "Username must be at most 20 characters long!" }),
-  email: z.string().email({ message: "Invalid email address!" }),
-  password: z
-    .string()
-    .min(8, { message: "Password must be at least 8 characters long!" }),
-  firstName: z.string().min(1, { message: "First name is required!" }),
-  lastName: z.string().min(1, { message: "Last name is required!" }),
-  phone: z.string().min(1, { message: "Phone is required!" }),
-  address: z.string().min(1, { message: "Address is required!" }),
-  bloodType: z.string().min(1, { message: "Blood type is required!" }),
-  birthday: z.date({ message: "Birthday is required!" }),
-  sex: z.enum(["male", "female"], { message: "Sex is required!" }),
-  //   img: z.any().refine((files) => files?.[0], { message: "Image is required!" }),
-  img: z.instanceof(File, { message: "Image is required!" }),
-});
-
-type Inputs = z.infer<typeof schema>;
+import { Dispatch, SetStateAction, useEffect, useState } from "react";
+import { studentSchema, StudentSchema } from "@/lib/formValidationSchemas";
+import { toast } from "react-toastify";
+import { useRouter } from "next/navigation";
+import { createStudent, updateStudent } from "@/lib/actions";
+import { useFormState } from "react-dom";
+import { CldUploadWidget } from "next-cloudinary";
 
 function StudentForm({
+  setOpen,
   data,
   type,
+  relatedData,
 }: {
-  data?: any;
+  setOpen: Dispatch<SetStateAction<boolean>>;
   type: "create" | "update";
+  data?: any;
+  relatedData?: any;
 }) {
   const {
     register,
     handleSubmit,
     formState: { errors },
-  } = useForm<Inputs>({
-    resolver: zodResolver(schema),
+  } = useForm<StudentSchema>({
+    resolver: zodResolver(studentSchema),
+  });
+
+  const [img, setImg] = useState<any>();
+
+  const studentAction = type === "create" ? createStudent : updateStudent;
+
+  const [state, formAction] = useFormState(studentAction, {
+    success: false,
+    error: false,
   });
 
   const onSubmit = handleSubmit((d) => {
     console.log("HELLO from react-hook-form!!!");
     console.log(d);
+    formAction({ ...d, img: img.secure_url });
   });
+
+  const router = useRouter();
+
+  useEffect(() => {
+    state.success && toast(`Student was successfully ${type}d!`);
+    state.success && setOpen(false);
+    state.success && router.refresh();
+  }, [state]);
+
+  // const { teachers } = relatedData;
 
   return (
     <form onSubmit={onSubmit} className="flex flex-col gap-8">
@@ -57,6 +65,14 @@ function StudentForm({
         Authentication Information
       </span>
       <div className="flex justify-between flex-wrap gap-4">
+        {data && (
+          <InputField
+            label="Id"
+            register={register}
+            name="id"
+            defaultValue={data?.id}
+          />
+        )}
         <InputField
           label="Username"
           type="text"
@@ -91,17 +107,17 @@ function StudentForm({
           label="First name"
           type="text"
           register={register}
-          name="firstName"
-          defaultValue={data?.firstName}
-          error={errors.firstName}
+          name="name"
+          defaultValue={data?.name}
+          error={errors.name}
         />
         <InputField
           label="Last name"
           type="text"
           register={register}
-          name="lastName"
-          defaultValue={data?.lastName}
-          error={errors.lastName}
+          name="surname"
+          defaultValue={data?.surname}
+          error={errors.surname}
         />
         <InputField
           label="Phone"
@@ -143,28 +159,38 @@ function StudentForm({
             className="ring-[1.5px] ring-gray-300 p-2 rounded-md  text-sm w-full"
             defaultValue={data?.sex}
           >
-            <option value="male">Male</option>
-            <option value="female">Female</option>
+            <option value="MALE">Male</option>
+            <option value="FEMALE">Female</option>
           </select>
           {errors.sex && (
             <p className="text-xs text-red-400">{errors?.sex.toString()}</p>
           )}
         </div>
         <div className="flex flex-col gap-2 w-full md:w-1/4 self-end">
-          <label
-            className="text-xs text-gray-500 flex items-center gap-2 cursor-pointer"
-            htmlFor="img"
+          <CldUploadWidget
+            uploadPreset="school-dashboard-ui"
+            onSuccess={(result, { widget }) => {
+              setImg(result.info);
+              widget.close();
+            }}
           >
-            <Image src="/upload.png" alt="" width={28} height={28} />
-            <span>Upload a photo</span>
-          </label>
-          <input id="img" type="file" {...register("img")} className="hidden" />
-
-          {errors.img && (
-            <p className="text-xs text-red-400">{errors?.img.toString()}</p>
-          )}
+            {({ open }) => {
+              return (
+                <div
+                  className="text-xs text-gray-500 flex items-center gap-2 cursor-pointer"
+                  onClick={() => open()}
+                >
+                  <Image src="/upload.png" alt="" width={28} height={28} />
+                  <span>Upload a photo</span>
+                </div>
+              );
+            }}
+          </CldUploadWidget>
         </div>
       </div>
+      {state.error && (
+        <span className="text-red-500">Something went wrong!</span>
+      )}
       <button className="bg-blue-400 text-white rounded-md p-2" type="submit">
         {type === "create" ? "Create" : "Update"}
       </button>

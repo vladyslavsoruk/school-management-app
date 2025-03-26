@@ -8,6 +8,7 @@ import { Teacher } from "@prisma/client";
 import { notFound } from "next/navigation";
 import FormContainer from "@/components/FormContainer";
 import { auth } from "@clerk/nextjs/server";
+import BigCalendarContainer from "@/components/BigCalendarContainer";
 
 async function SingleTeacherPage({
   params: { id },
@@ -157,7 +158,7 @@ async function SingleTeacherPage({
         {/* BOTTOM */}
         <div className="mt-4 bg-white rounded-md p-4 h-[800px]">
           <h1>Teacher&apos;s Schedule</h1>
-          {/* <BigCalendar /> */}
+          <BigCalendarContainer type="teacherId" id={id} />
         </div>
       </div>
       {/* RIGHT */}
