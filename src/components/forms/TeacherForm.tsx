@@ -52,7 +52,7 @@ function TeacherForm({
     state.success && toast(`Teacher was successfully ${type}d!`);
     state.success && setOpen(false);
     state.success && router.refresh();
-  }, [state]);
+  }, [state, router, type, setOpen]);
 
   const { subjects } = relatedData;
 

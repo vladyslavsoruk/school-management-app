@@ -2,6 +2,7 @@
 
 import {
   deleteClass,
+  deleteExam,
   deleteStudent,
   deleteSubject,
   deleteTeacher,
@@ -21,7 +22,7 @@ const deleteActionMap = {
   subject: deleteSubject,
   class: deleteClass,
   // lesson: deleteLesson,
-  // exam: deleteExam,
+  exam: deleteExam,
   // assignment: deleteAssignment,
   // result: deleteResult,
   // attendance: deleteAttendance,
@@ -39,6 +40,9 @@ const SubjectForm = dynamic(() => import("./forms/SubjectForm"), {
   loading: () => <h1>Loading...</h1>,
 });
 const ClassForm = dynamic(() => import("./forms/ClassForm"), {
+  loading: () => <h1>Loading...</h1>,
+});
+const ExamForm = dynamic(() => import("./forms/ExamForm"), {
   loading: () => <h1>Loading...</h1>,
 });
 
@@ -82,6 +86,14 @@ const forms: {
       relatedData={relatedData}
     />
   ),
+  exam: (setOpen, type, data, relatedData) => (
+    <ExamForm
+      setOpen={setOpen}
+      type={type}
+      data={data}
+      relatedData={relatedData}
+    />
+  ),
 };
 
 function FormModal({
@@ -102,11 +114,15 @@ function FormModal({
 
     useEffect(() => {
       if (state.success) {
-        toast(`${table} was successfully deleted!`);
+        toast(
+          `${
+            table.charAt(0).toUpperCase() + table.slice(1)
+          } was successfully deleted!`
+        );
         setOpen(false);
         router.refresh();
       }
-    }, [state]);
+    }, [state, router]);
 
     return type === "delete" && id ? (
       <form action={formAction} className="flex flex-col gap-4 p-4">
