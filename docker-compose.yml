@@ -12,15 +12,18 @@ services:
       - "5432:5432"
     volumes:
       - postgres_data:/var/lib/postgresql/data
+
   web:
     build:
       context: .
       args:
-        DATABASE_URL: postgresql://vladsoruk:vladsoruk12345@localhost:5432/school
+        DATABASE_URL: postgresql://vladsoruk:vladsoruk12345@postgres:5432/school
+        POSTGRES_HOST: postgres
     container_name: nextjs_app
+    environment:
+      - POSTGRES_HOST: postgres
+      - DATABASE_URL: postgresql://vladsoruk:vladsoruk12345@postgres:5432/school
     ports:
       - "3000:3000"
-    environment:
-      - DATABASE_URL: postgresql://vladsoruk:vladsoruk12345@localhost:5432/school
     depends_on:
       - postgres
