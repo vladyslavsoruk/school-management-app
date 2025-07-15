@@ -7,7 +7,7 @@ const inter = Inter({ subsets: ["latin"] });
 
 export const metadata: Metadata = {
   title: "SorVL School Management Dashboard",
-  description: "Next.js School Management System",
+  description: "School Management System",
 };
 
 export default function RootLayout({
@@ -16,7 +16,9 @@ export default function RootLayout({
   children: React.ReactNode;
 }>) {
   return (
-    <ClerkProvider>
+    <ClerkProvider
+      publishableKey={process.env.NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY!}
+    >
       <html lang="en">
         <body className={inter.className}>{children}</body>
       </html>
