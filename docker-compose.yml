@@ -1,28 +1,13 @@
 version: "3.8"
 
 services:
-  postgres:
-    image: postgres:15
-    container_name: school_management_system
-    environment:
-      POSTGRES_USER: vladsoruk
-      POSTGRES_PASSWORD: vladsoruk12345
-      POSTGRES_DB: school
-    ports:
-      - "5432:5432"
-    volumes:
-      - postgres_data:/var/lib/postgresql/data
-
   web:
     build:
       context: .
       args:
-        DATABASE_URL: postgresql://vladsoruk:vladsoruk12345@postgres:5432/school
+        DATABASE_URL: postgresql://vladsoruk:TbdEe4YdDUbEZCJrOrQiuBKGZE3JrbWp@dpg-d1r7fg8dl3ps73f5l6s0-a.frankfurt-postgres.render.com/school_61mx
     container_name: nextjs_app
     environment:
-      - POSTGRES_HOST: postgres
-      - DATABASE_URL: postgresql://vladsoruk:vladsoruk12345@postgres:5432/school
+      - DATABASE_URL: postgresql://vladsoruk:TbdEe4YdDUbEZCJrOrQiuBKGZE3JrbWp@dpg-d1r7fg8dl3ps73f5l6s0-a.frankfurt-postgres.render.com/school_61mx
     ports:
       - "3000:3000"
-    depends_on:
-      - postgres
