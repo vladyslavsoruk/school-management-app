@@ -15,11 +15,7 @@ RUN npx prisma generate
 
 RUN npm run build
 
-# Копируем и делаем исполняемым entrypoint-скрипт
-COPY entrypoint.sh /usr/local/bin/entrypoint.sh
-RUN chmod +x /usr/local/bin/entrypoint.sh
-
 EXPOSE 3000
 
-# По умолчанию запускаем наш entrypoint
-ENTRYPOINT ["entrypoint.sh"]
+# Start the Next.js application
+CMD ["npm", "start"]
