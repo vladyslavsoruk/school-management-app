@@ -1,6 +1,6 @@
 import prisma from "@/lib/prisma";
 import { auth } from "@clerk/nextjs/server";
-import { Announcement } from "@prisma/client";
+import { Announcement, Prisma } from "@prisma/client";
 
 let role: string | null = null;
 
@@ -15,19 +15,19 @@ async function Announcements() {
     parent: { students: { some: { parentId: currentUserId } } },
   };
 
+  const accessFilters: Prisma.AnnouncementWhereInput[] = [{ classId: null }];
+
+  if (role !== "admin") {
+    const classFilter = roleConditions[role as keyof typeof roleConditions];
+    if (classFilter) {
+      accessFilters.push({ class: classFilter as Prisma.ClassWhereInput });
+    }
+  }
+
   const data = await prisma.announcement.findMany({
     take: 3,
     orderBy: { date: "desc" },
-    where: {
-      ...(role !== "admin" && {
-        OR: [
-          { classId: null },
-          {
-            class: roleConditions[role as keyof typeof roleConditions] || {},
-          },
-        ],
-      }),
-    },
+    where: role !== "admin" ? { OR: accessFilters } : {},
   });
 
   return (

@@ -91,6 +91,7 @@ async function SubjectList({
       },
       take: ITEMS_PER_PAGE,
       skip: ITEMS_PER_PAGE * (p - 1),
+      orderBy: { name: "asc" },
     }),
     prisma.subject.count({ where: query }),
   ]);

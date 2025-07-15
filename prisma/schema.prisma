@@ -59,7 +59,7 @@ model Parent {
   name      String
   surname   String
   email     String?   @unique
-  phone     String    @unique
+  phone     String?   @unique
   address   String
   createdAt DateTime  @default(now())
   students  Student[]
@@ -122,7 +122,7 @@ model Exam {
 
 model Assignment {
   id        Int      @id @default(autoincrement())
-  title String
+  title     String
   startDate DateTime
   dueDate   DateTime
   lessonId  Int
@@ -131,14 +131,14 @@ model Assignment {
 }
 
 model Result {
-  id           Int        @id @default(autoincrement())
+  id           Int         @id @default(autoincrement())
   score        Int
   examId       Int?
   exam         Exam?       @relation(fields: [examId], references: [id])
   assignmentId Int?
   assignment   Assignment? @relation(fields: [assignmentId], references: [id])
   studentId    String
-  student      Student    @relation(fields: [studentId], references: [id])
+  student      Student     @relation(fields: [studentId], references: [id])
 }
 
 model Attendance {

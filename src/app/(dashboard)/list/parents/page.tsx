@@ -112,6 +112,9 @@ async function ParentList({
       },
       take: ITEMS_PER_PAGE,
       skip: ITEMS_PER_PAGE * (p - 1),
+      orderBy: {
+        createdAt: "desc",
+      },
     }),
     prisma.parent.count({ where: query }),
   ]);

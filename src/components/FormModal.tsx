@@ -3,6 +3,7 @@
 import {
   deleteClass,
   deleteExam,
+  deleteParent,
   deleteStudent,
   deleteSubject,
   deleteTeacher,
@@ -18,7 +19,7 @@ import { FormContainerProps } from "./FormContainer";
 const deleteActionMap = {
   teacher: deleteTeacher,
   student: deleteStudent,
-  // parent: deleteParent,
+  parent: deleteParent,
   subject: deleteSubject,
   class: deleteClass,
   // lesson: deleteLesson,
@@ -34,6 +35,9 @@ const TeacherForm = dynamic(() => import("./forms/TeacherForm"), {
   loading: () => <h1>Loading...</h1>,
 });
 const StudentForm = dynamic(() => import("./forms/StudentForm"), {
+  loading: () => <h1>Loading...</h1>,
+});
+const ParentForm = dynamic(() => import("./forms/ParentForm"), {
   loading: () => <h1>Loading...</h1>,
 });
 const SubjectForm = dynamic(() => import("./forms/SubjectForm"), {
@@ -64,6 +68,14 @@ const forms: {
   ),
   student: (setOpen, type, data, relatedData) => (
     <StudentForm
+      setOpen={setOpen}
+      type={type}
+      data={data}
+      relatedData={relatedData}
+    />
+  ),
+  parent: (setOpen, type, data, relatedData) => (
+    <ParentForm
       setOpen={setOpen}
       type={type}
       data={data}
@@ -106,10 +118,13 @@ function FormModal({
   const [open, setOpen] = useState(false);
 
   const Form = () => {
-    const [state, formAction] = useFormState(deleteActionMap[table], {
-      success: false,
-      error: false,
-    });
+    const [state, formAction] = useFormState(
+      deleteActionMap[table as keyof typeof deleteActionMap],
+      {
+        success: false,
+        error: false,
+      }
+    );
     const router = useRouter();
 
     useEffect(() => {
@@ -141,7 +156,7 @@ function FormModal({
     );
   };
 
-  function handleClick(e) {
+  function handleClick() {
     setOpen(true);
   }
 

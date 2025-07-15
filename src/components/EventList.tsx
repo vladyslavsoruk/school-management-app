@@ -2,8 +2,6 @@ import prisma from "@/lib/prisma";
 
 async function EventList({ dateParam }: { dateParam: string | undefined }) {
   const date = dateParam ? new Date(dateParam) : new Date();
-  console.log("dateParam:", dateParam);
-  console.log("dateParam:", new Date(dateParam));
 
   const data = await prisma.event.findMany({
     where: {

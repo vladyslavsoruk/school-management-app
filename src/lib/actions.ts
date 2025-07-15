@@ -7,6 +7,7 @@ import {
   TeacherSchema,
   StudentSchema,
   ExamSchema,
+  ParentSchema,
 } from "./formValidationSchemas";
 import prisma from "./prisma";
 
@@ -359,6 +360,119 @@ export const deleteStudent = async (
         id,
       },
     });
+    return { success: true, error: false };
+  } catch (error) {
+    console.error(error);
+    return { success: false, error: true };
+  }
+};
+
+// PARENT //
+export const createParent = async (
+  currentState: CurrentState,
+  data: ParentSchema
+) => {
+  try {
+    const client = await clerkClient();
+
+    const response = await client.users.createUser({
+      username: data.username,
+      password: data.password,
+      firstName: data.name,
+      lastName: data.surname,
+      publicMetadata: {
+        role: "parent",
+      },
+    });
+
+    await prisma.parent.create({
+      data: {
+        id: response.id,
+        username: data.username,
+        name: data.name,
+        surname: data.surname,
+        email: data.email,
+        phone: data.phone,
+        address: data.address,
+      },
+    });
+    return { success: true, error: false };
+  } catch (error) {
+    console.error(error);
+    return { success: false, error: true };
+  }
+};
+
+export const updateParent = async (
+  currentState: CurrentState,
+  data: ParentSchema
+) => {
+  try {
+    if (!data.id) {
+      return { success: false, error: true };
+    }
+    const client = await clerkClient();
+
+    await client.users.updateUser(data.id, {
+      username: data.username,
+      ...(data.password !== "" && { password: data.password }),
+      firstName: data.name,
+      lastName: data.surname,
+    });
+
+    await prisma.parent.update({
+      where: {
+        id: data.id,
+      },
+      data: {
+        username: data.username,
+        name: data.name,
+        surname: data.surname,
+        email: data.email,
+        phone: data.phone,
+        address: data.address,
+      },
+    });
+    return { success: true, error: false };
+  } catch (error) {
+    console.error(error);
+    return { success: false, error: true };
+  }
+};
+
+export const deleteParent = async (
+  currentState: CurrentState,
+  data: FormData
+) => {
+  const id = data.get("id") as string;
+  try {
+    const client = await clerkClient();
+    await client.users.deleteUser(id);
+
+    // Also delete child of the parent from DB
+    const children = await prisma.student.findMany({
+      where: {
+        parentId: id,
+      },
+      select: {
+        id: true,
+      },
+    });
+    for (const child of children) {
+      await prisma.student.delete({
+        where: {
+          id: child.id,
+        },
+      });
+      await client.users.deleteUser(child.id);
+    }
+
+    await prisma.parent.delete({
+      where: {
+        id,
+      },
+    });
+
     return { success: true, error: false };
   } catch (error) {
     console.error(error);
