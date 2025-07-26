@@ -33,6 +33,9 @@ function ResultForm({
     defaultValues: {
       resultType: data?.isExam ? "exam" : "assignment",
       studentId: data?.studentId,
+      assignmentId:
+        data?.assignmentId ?? relatedData.assignments?.[0]?.id ?? "",
+      examId: data?.examId ?? relatedData.exams?.[0]?.id ?? "",
     },
   });
   const [resultOfExam, setResultOfExam] = useState(false);
@@ -144,7 +147,7 @@ function ResultForm({
 
       console.log("filteredStudents in handleExamChangeById", filteredStudents);
 
-      if (filteredStudents[0].id) {
+      if (filteredStudents.length > 0) {
         const defaultStudentIdFits = filteredStudents
           .map((s: { id: any }) => s.id)
           .includes(data?.studentId);
@@ -194,7 +197,7 @@ function ResultForm({
         filteredStudents
       );
 
-      if (filteredStudents[0].id) {
+      if (filteredStudents.length > 0) {
         console.log("Default studentId value: ", data?.studentId);
         const defaultStudentIdFits = filteredStudents
           .map((s: { id: any }) => s.id)

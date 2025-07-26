@@ -8,6 +8,7 @@ import { ITEMS_PER_PAGE } from "@/lib/settings";
 import { auth } from "@clerk/nextjs/server";
 import { Class, Lesson, Prisma, Subject, Teacher } from "@prisma/client";
 import Image from "next/image";
+import { toLocalDatetimeInputValue } from "@/lib/utils";
 import Link from "next/link";
 
 let role: string | null = null;
@@ -30,13 +31,16 @@ const renderRow = (item: LessonsList) => {
         {item.teacher.name + " " + item.teacher.surname}
       </td>
       <td className="hidden md:table-cell">
-        {item.startTime.getHours() +
+        {toLocalDatetimeInputValue(item.startTime).slice(-5) +
+          " - " +
+          toLocalDatetimeInputValue(item.endTime).slice(-5)}
+        {/* {item.startTime.getHours() +
           ":" +
           item.startTime.getMinutes() +
           " - " +
           item.endTime.getHours() +
           ":" +
-          item.endTime.getMinutes()}
+          item.endTime.getMinutes()} */}
       </td>
       <td>
         <div className="flex items-center gap-2">
