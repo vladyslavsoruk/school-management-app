@@ -1,4 +1,4 @@
-import FormModal from "@/components/FormModal";
+import FormContainer from "@/components/FormContainer";
 import Pagination from "@/components/Pagination";
 import Table from "@/components/Table";
 import TableSearch from "@/components/TableSearch";
@@ -79,8 +79,12 @@ const renderRow = (item: ResultDataList) => {
         <div className="flex items-center gap-2">
           {(role === "admin" || role === "teacher") && (
             <>
-              <FormModal table={"attendance"} type={"update"} data={item} />
-              <FormModal table={"attendance"} type={"delete"} id={item.id} />
+              <FormContainer table={"attendance"} type={"update"} data={item} />
+              <FormContainer
+                table={"attendance"}
+                type={"delete"}
+                id={item.id}
+              />
             </>
           )}
         </div>
@@ -186,18 +190,21 @@ async function AttendanceList({
       include: {
         student: {
           select: {
+            id: true,
             name: true,
             surname: true,
-            class: {
+          },
+        },
+        lesson: {
+          select: {
+            id: true,
+            startTime: true,
+            subject: {
               select: {
                 name: true,
               },
             },
-          },
-        },
-        lesson: {
-          include: {
-            subject: {
+            class: {
               select: {
                 name: true,
               },
@@ -216,11 +223,14 @@ async function AttendanceList({
     return {
       id: item.id,
       date: item.date,
+      lessonId: item.lesson.id,
+      studentId: item.student.id,
       present: item.present,
       studentName: item.student.name,
       studentSurname: item.student.surname,
       subjectName: item.lesson.subject.name,
-      className: item.student.class.name,
+      className: item.lesson.class.name,
+      lesson: item.lesson,
     };
   });
 
@@ -241,7 +251,7 @@ async function AttendanceList({
               <Image src="/sort.png" alt="" width={14} height={14} />
             </button>
             {(role === "admin" || role === "teacher") && (
-              <FormModal table={"attendance"} type={"create"} />
+              <FormContainer table={"attendance"} type={"create"} />
             )}
           </div>
         </div>

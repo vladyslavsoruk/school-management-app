@@ -135,9 +135,11 @@ function ClassForm({
           )}
         </div>
       </div>
+
       {state.error && (
         <span className="text-red-500">Something went wrong!</span>
       )}
+
       <button className="bg-blue-400 text-white rounded-md p-2" type="submit">
         {type === "create" ? "Create" : "Update"}
       </button>

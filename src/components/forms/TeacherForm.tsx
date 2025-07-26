@@ -31,6 +31,8 @@ function TeacherForm({
     resolver: zodResolver(teacherSchema),
   });
 
+  console.log("TEACHER DATA", data);
+
   const teacherAction = type === "create" ? createTeacher : updateTeacher;
 
   const [img, setImg] = useState<any>();
@@ -173,7 +175,7 @@ function TeacherForm({
             multiple
             {...register("subjects")}
             className="ring-[1.5px] ring-gray-300 p-2 rounded-md  text-sm w-full"
-            defaultValue={data?.subjects}
+            defaultValue={data?.subjects.map((s: any) => s.id) ?? []}
           >
             {subjects.map((subject: { id: number; name: string }) => (
               <option value={subject.id} key={subject.id}>

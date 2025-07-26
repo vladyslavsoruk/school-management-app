@@ -44,3 +44,10 @@ export const adjustScheduleToCurrentWeek = (
     };
   });
 };
+
+export const toLocalDatetimeInputValue = (dateUtc: string | Date) => {
+  const date = typeof dateUtc === "string" ? new Date(dateUtc) : dateUtc;
+  // shift by the timezone offset, so the resulting ISO string is in *local* time
+  const local = new Date(date.getTime() - date.getTimezoneOffset() * 60000);
+  return local.toISOString().slice(0, 16);
+};

@@ -1,4 +1,4 @@
-import FormModal from "@/components/FormModal";
+import FormContainer from "@/components/FormContainer";
 import Pagination from "@/components/Pagination";
 import Table from "@/components/Table";
 import TableSearch from "@/components/TableSearch";
@@ -7,7 +7,6 @@ import { ITEMS_PER_PAGE } from "@/lib/settings";
 import { auth, currentUser } from "@clerk/nextjs/server";
 import { Class, Event, Prisma } from "@prisma/client";
 import Image from "next/image";
-import Link from "next/link";
 
 let role: string | null = null;
 
@@ -80,8 +79,8 @@ const renderRow = (item: EventList) => {
         <div className="flex items-center gap-2">
           {role === "admin" && (
             <>
-              <FormModal table={"event"} type={"update"} data={item} />
-              <FormModal table={"event"} type={"delete"} id={item.id} />
+              <FormContainer table={"event"} type={"update"} data={item} />
+              <FormContainer table={"event"} type={"delete"} id={item.id} />
             </>
           )}
         </div>
@@ -137,7 +136,8 @@ async function EventList({
 
   query.OR = [
     { classId: null },
-    { class: roleConditions[role as keyof typeof roleConditions] },
+    // { class: roleConditions[role as keyof typeof roleConditions] },
+    { class: { is: roleConditions[role as keyof typeof roleConditions] } },
   ];
 
   const [events, count] = await prisma.$transaction([
@@ -146,6 +146,7 @@ async function EventList({
       include: {
         class: true,
       },
+      orderBy: { startTime: "desc" },
       take: ITEMS_PER_PAGE,
       skip: ITEMS_PER_PAGE * (p - 1),
     }),
@@ -166,7 +167,9 @@ async function EventList({
             <button className="w-8 h-8 flex items-center justify-center rounded-full bg-customYellow">
               <Image src="/sort.png" alt="" width={14} height={14} />
             </button>
-            {role === "admin" && <FormModal table={"event"} type={"create"} />}
+            {role === "admin" && (
+              <FormContainer table={"event"} type={"create"} />
+            )}
           </div>
         </div>
       </div>

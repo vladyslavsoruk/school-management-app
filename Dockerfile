@@ -11,7 +11,7 @@ RUN npm install
 
 COPY . .
 
-RUN npx prisma migrate dev --name init
+RUN npx prisma migrate dev
 RUN npx prisma db seed
 
 RUN npm run build

@@ -1,6 +1,7 @@
 import Image from "next/image";
 import AttendanceChart from "./AttendanceChart";
 import prisma from "@/lib/prisma";
+import { log } from "console";
 
 async function AttendanceChartContainer() {
   const today = new Date();
@@ -35,10 +36,10 @@ async function AttendanceChartContainer() {
     };
 
   resData.forEach((item) => {
-    const itemDate = new Date(item.date);
+    const itemDayOfWeek = new Date(item.date).getDay();
 
-    if (dayOfWeek >= 1 && dayOfWeek <= 5) {
-      const dayName = daysOfWeek[dayOfWeek - 1];
+    if (itemDayOfWeek >= 1 && itemDayOfWeek <= 5) {
+      const dayName = daysOfWeek[itemDayOfWeek - 1];
       if (item.present) {
         attendanceMap[dayName].present += 1;
       } else {
@@ -48,11 +49,19 @@ async function AttendanceChartContainer() {
   });
   console.log(attendanceMap);
 
-  const data = daysOfWeek.map((day) => ({
-    name: day,
-    present: attendanceMap[day].present,
-    absent: attendanceMap[day].absent,
-  }));
+  // const data = daysOfWeek.map((day) => ({
+  //   name: day,
+  //   present: attendanceMap[day].present,
+  //   absent: attendanceMap[day].absent,
+  // }));
+
+  const data = [
+    { name: "Mon", present: 44, absent: 6 },
+    { name: "Tue", present: 46, absent: 4 },
+    { name: "Wed", present: 45, absent: 5 },
+    { name: "Thu", present: 45, absent: 5 },
+    { name: "Fri", present: 46, absent: 4 },
+  ];
 
   return (
     <div className="bg-white rounded-lg p-4 h-full">

@@ -1,7 +1,8 @@
-import FormModal from "@/components/FormModal";
+import FormContainer from "@/components/FormContainer";
 import Pagination from "@/components/Pagination";
 import Table from "@/components/Table";
 import TableSearch from "@/components/TableSearch";
+import { studentsData } from "@/lib/data";
 import prisma from "@/lib/prisma";
 import { ITEMS_PER_PAGE } from "@/lib/settings";
 import { auth } from "@clerk/nextjs/server";
@@ -22,42 +23,6 @@ type ResultDataList = {
   className: string;
   startTime: Date;
 };
-
-const columns = [
-  { header: "Title", accessor: "title" },
-  {
-    header: "Student",
-    accessor: "student",
-  },
-  {
-    header: "Score",
-    accessor: "score",
-    className: "hidden md:table-cell",
-  },
-  {
-    header: "Teacher",
-    accessor: "teacher",
-    className: "hidden md:table-cell",
-  },
-  {
-    header: "Class",
-    accessor: "class",
-    className: "hidden md:table-cell",
-  },
-  {
-    header: "Date",
-    accessor: "date",
-    className: "hidden md:table-cell",
-  },
-  ...(role === "admin" || role === "teacher"
-    ? [
-        {
-          header: "Actions",
-          accessor: "action",
-        },
-      ]
-    : []),
-];
 
 const renderRow = (item: ResultDataList) => {
   return (
@@ -83,8 +48,8 @@ const renderRow = (item: ResultDataList) => {
         <div className="flex items-center gap-2">
           {(role === "admin" || role === "teacher") && (
             <>
-              <FormModal table={"result"} type={"update"} data={item} />
-              <FormModal table={"result"} type={"delete"} id={item.id} />
+              <FormContainer table={"result"} type={"update"} data={item} />
+              <FormContainer table={"result"} type={"delete"} id={item.id} />
             </>
           )}
         </div>
@@ -102,6 +67,42 @@ async function ResultList({
   const currentUserId = authObject.userId;
   role = (authObject.sessionClaims?.metadata as { role: string })?.role;
 
+  const columns = [
+    { header: "Title", accessor: "title" },
+    {
+      header: "Student",
+      accessor: "student",
+    },
+    {
+      header: "Score",
+      accessor: "score",
+      className: "hidden md:table-cell",
+    },
+    {
+      header: "Teacher",
+      accessor: "teacher",
+      className: "hidden md:table-cell",
+    },
+    {
+      header: "Class",
+      accessor: "class",
+      className: "hidden md:table-cell",
+    },
+    {
+      header: "Date",
+      accessor: "date",
+      className: "hidden md:table-cell",
+    },
+    ...(role === "admin" || role === "teacher"
+      ? [
+          {
+            header: "Actions",
+            accessor: "action",
+          },
+        ]
+      : []),
+  ];
+
   const { page, ...queryParams } = searchParams;
 
   const p = page ? parseInt(page) : 1;
@@ -113,11 +114,24 @@ async function ResultList({
     for (const [key, value] of Object.entries(queryParams)) {
       if (value !== undefined) {
         switch (key) {
-          // case "teacherId":
-          //   query.lesson = {
-          //     teacherId: value,
-          //   };
-          //   break;
+          case "teacherId":
+            query.OR = [
+              {
+                exam: {
+                  lesson: {
+                    teacherId: value,
+                  },
+                },
+              },
+              {
+                assignment: {
+                  lesson: {
+                    teacherId: value,
+                  },
+                },
+              },
+            ];
+            break;
           case "studentId":
             query.studentId = value;
             break;
@@ -222,6 +236,10 @@ async function ResultList({
       },
       take: ITEMS_PER_PAGE,
       skip: ITEMS_PER_PAGE * (p - 1),
+      orderBy: [
+        { assignment: { dueDate: "desc" } },
+        { exam: { startTime: "desc" } },
+      ],
     }),
     prisma.result.count({ where: query }),
   ]);
@@ -241,6 +259,10 @@ async function ResultList({
       score: item.score,
       className: assessment.lesson.class.name,
       startTime: isExam ? assessment.startTime : assessment.startDate,
+      isExam,
+      assignmentId: isExam ? null : assessment.id,
+      examId: isExam ? assessment.id : null,
+      studentId: item.studentId,
     };
   });
 
@@ -259,7 +281,7 @@ async function ResultList({
               <Image src="/sort.png" alt="" width={14} height={14} />
             </button>
             {(role === "admin" || role === "teacher") && (
-              <FormModal table={"subject"} type={"create"} />
+              <FormContainer table={"result"} type={"create"} />
             )}
           </div>
         </div>

@@ -14,32 +14,6 @@ type ExamList = Exam & {
   lesson: { subject: Subject; class: Class; teacher: Teacher };
 };
 
-const columns = [
-  { header: "Subject Name", accessor: "name" },
-  {
-    header: "Class",
-    accessor: "class",
-  },
-  {
-    header: "Teacher",
-    accessor: "teacher",
-    className: "hidden md:table-cell",
-  },
-  {
-    header: "Date",
-    accessor: "date",
-    className: "hidden md:table-cell",
-  },
-  ...(role === "admin" || role === "teacher"
-    ? [
-        {
-          header: "Actions",
-          accessor: "action",
-        },
-      ]
-    : []),
-];
-
 const renderRow = (item: ExamList) => {
   return (
     <tr
@@ -83,6 +57,32 @@ async function ExamList({
 
   console.log("currentUserId:", currentUserId);
   console.log("role:", role);
+
+  const columns = [
+    { header: "Subject Name", accessor: "name" },
+    {
+      header: "Class",
+      accessor: "class",
+    },
+    {
+      header: "Teacher",
+      accessor: "teacher",
+      className: "hidden md:table-cell",
+    },
+    {
+      header: "Date",
+      accessor: "date",
+      className: "hidden md:table-cell",
+    },
+    ...(role === "admin" || role === "teacher"
+      ? [
+          {
+            header: "Actions",
+            accessor: "action",
+          },
+        ]
+      : []),
+  ];
 
   const { page, ...queryParams } = searchParams;
 
@@ -170,6 +170,7 @@ async function ExamList({
       },
       take: ITEMS_PER_PAGE,
       skip: ITEMS_PER_PAGE * (p - 1),
+      orderBy: { startTime: "desc" },
     }),
     prisma.exam.count({ where: query }),
   ]);

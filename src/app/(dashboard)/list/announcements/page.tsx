@@ -1,4 +1,4 @@
-import FormModal from "@/components/FormModal";
+import FormContainer from "@/components/FormContainer";
 import Pagination from "@/components/Pagination";
 import Table from "@/components/Table";
 import TableSearch from "@/components/TableSearch";
@@ -7,7 +7,6 @@ import { ITEMS_PER_PAGE } from "@/lib/settings";
 import { auth } from "@clerk/nextjs/server";
 import { Announcement, Class, Prisma } from "@prisma/client";
 import Image from "next/image";
-import Link from "next/link";
 
 // const { sessionClaims } = await auth();
 // const role = (sessionClaims?.metadata as { role: string })?.role;
@@ -65,8 +64,16 @@ const renderRow = (item: AnnouncementList) => {
         <div className="flex items-center gap-2">
           {role === "admin" && (
             <>
-              <FormModal table={"announcement"} type={"update"} data={item} />
-              <FormModal table={"announcement"} type={"delete"} id={item.id} />
+              <FormContainer
+                table={"announcement"}
+                type={"update"}
+                data={item}
+              />
+              <FormContainer
+                table={"announcement"}
+                type={"delete"}
+                id={item.id}
+              />
             </>
           )}
         </div>
@@ -80,8 +87,9 @@ async function AnnouncementList({
 }: {
   searchParams: { [key: string]: string | undefined };
 }) {
-  let authObject = await auth();
-  let currentUserId = authObject.userId;
+  const authObject = await auth();
+  const currentUserId = authObject.userId;
+  role = (authObject.sessionClaims?.metadata as { role: string })?.role;
 
   console.log("currentUserId:", currentUserId);
 
@@ -119,10 +127,23 @@ async function AnnouncementList({
     parent: { students: { some: { parentId: currentUserId! } } },
   };
 
+  // {
+  //   role === "admin"
+  //     ? null
+  //     : (query.OR = [
+  //         { classId: null },
+  //         {
+  //           class: { is: roleConditions[role as keyof typeof roleConditions] },
+  //         },
+  //       ]);
+  // }
+
   query.OR = [
     { classId: null },
-    { class: roleConditions[role as keyof typeof roleConditions] },
+    { class: { is: roleConditions[role as keyof typeof roleConditions] } },
   ];
+
+  console.log("query:", query);
 
   const [announcements, count] = await prisma.$transaction([
     prisma.announcement.findMany({
@@ -130,6 +151,7 @@ async function AnnouncementList({
       include: {
         class: true,
       },
+      orderBy: { date: "desc" },
       take: ITEMS_PER_PAGE,
       skip: ITEMS_PER_PAGE * (p - 1),
     }),
@@ -153,7 +175,7 @@ async function AnnouncementList({
               <Image src="/sort.png" alt="" width={14} height={14} />
             </button>
             {role === "admin" && (
-              <FormModal table={"announcement"} type={"create"} />
+              <FormContainer table={"announcement"} type={"create"} />
             )}
           </div>
         </div>

@@ -53,7 +53,7 @@ const renderRow = (item: ParentList) => {
         </div>
       </td>
       <td className="hidden md:table-cell ">
-        {item.students.map((s: Student) => s.name).join(", ")}
+        {item.students.map((s: Student) => s.name).join(", ") || ""}
       </td>
       <td className="hidden md:table-cell ">{item.phone}</td>
       <td className="hidden lg:table-cell ">{item.address}</td>

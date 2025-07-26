@@ -121,6 +121,8 @@ function ParentForm({
           defaultValue={data?.phone}
           error={errors.phone}
         />
+      </div>
+      <div className="flex justify-center">
         <InputField
           label="Address"
           type="text"

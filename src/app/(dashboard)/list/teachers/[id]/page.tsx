@@ -27,6 +27,11 @@ async function SingleTeacherPage({
       id,
     },
     include: {
+      subjects: {
+        select: {
+          id: true,
+        },
+      },
       _count: {
         select: {
           subjects: true,
@@ -52,10 +57,10 @@ async function SingleTeacherPage({
             <div className="w-1/3">
               <Image
                 src={teacher.img || "/noAvatar.png"}
-                alt=""
+                alt="teacher-avatar"
                 width={144}
                 height={144}
-                className="w-36 h-36 rounded-full object-cover"
+                className="w-full max-w-36 max-h-36 rounded-full object-cover"
               />
             </div>
             <div className="w-2/3 flex flex-col justify-between gap-4">
@@ -163,41 +168,43 @@ async function SingleTeacherPage({
       </div>
       {/* RIGHT */}
       <div className="w-full xl:w-1/3 flex flex-col gap-4">
-        <div className="bg-white p-4 rounded-md">
-          <h1 className="text-xl font-semibold">Shortcuts</h1>
-          <div className="mt-4 flex gap-4 flex-wrap text-xs text-gray-500">
-            <Link
-              className="p-3 rounded-md bg-customSkyLight"
-              href={`/list/classes?supervisorId=${"teacher2"}`}
-            >
-              Teacher&apos;s Classes
-            </Link>
-            <Link
-              className="p-3 rounded-md bg-customPurpleLight"
-              href={`/list/students?teacherId=${"teacher2"}`}
-            >
-              Teacher&apos;s Students
-            </Link>
-            <Link
-              className="p-3 rounded-md bg-customYellowLight"
-              href={`/list/lessons?teacherId=${"teacher2"}`}
-            >
-              Teacher&apos;s Lessons
-            </Link>
-            <Link
-              className="p-3 rounded-md bg-pink-50"
-              href={`/list/exams?teacherId=${"teacher1"}`}
-            >
-              Teacher&apos;s Exams
-            </Link>
-            <Link
-              className="p-3 rounded-md bg-customSkyLight"
-              href={`/list/assignments?teacherId=${"teacher1"}`}
-            >
-              Teacher&apos;s Assignments
-            </Link>
+        {role === "admin" && (
+          <div className="bg-white p-4 rounded-md">
+            <h1 className="text-xl font-semibold">Shortcuts</h1>
+            <div className="mt-4 flex gap-4 flex-wrap text-xs text-gray-500">
+              <Link
+                className="p-3 rounded-md bg-customSkyLight"
+                href={`/list/classes?supervisorId=${id}`}
+              >
+                Teacher&apos;s Classes
+              </Link>
+              <Link
+                className="p-3 rounded-md bg-customPurpleLight"
+                href={`/list/students?teacherId=${id}`}
+              >
+                Teacher&apos;s Students
+              </Link>
+              <Link
+                className="p-3 rounded-md bg-customYellowLight"
+                href={`/list/lessons?teacherId=${id}`}
+              >
+                Teacher&apos;s Lessons
+              </Link>
+              <Link
+                className="p-3 rounded-md bg-pink-50"
+                href={`/list/exams?teacherId=${id}`}
+              >
+                Teacher&apos;s Exams
+              </Link>
+              <Link
+                className="p-3 rounded-md bg-customSkyLight"
+                href={`/list/assignments?teacherId=${id}`}
+              >
+                Teacher&apos;s Assignments
+              </Link>
+            </div>
           </div>
-        </div>
+        )}
         <PerformanceChart />
         <Announcements />
       </div>
