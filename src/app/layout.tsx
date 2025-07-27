@@ -21,6 +21,9 @@ export default function RootLayout({
       publishableKey={`pk_test_c29saWQtYnVjay00MS5jbGVyay5hY2NvdW50cy5kZXYk`}
     >
       <html lang="en">
+        <head>
+          <link rel="icon" type="image/png" href="/favicon.png" />
+        </head>
         <body className={inter.className}>{children}</body>
       </html>
     </ClerkProvider>
