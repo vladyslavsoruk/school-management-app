@@ -7,6 +7,7 @@ A comprehensive **Next.js & Prisma** application backed by **PostgreSQL**, that 
 ## Installation
 
 1. Create .env file in the root directory with the following variables:
+
    `DATABASE_URL=YOUR_DATABASE_LINK`
    `NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY=pk_test_.....`
    `CLERK_SECRET_KEY=sk_test_.....`
